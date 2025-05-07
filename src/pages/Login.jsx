@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { login } from '../services/auth'; // Import the auth service
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { login } from '../services/auth'; // Import the auth service
 
 const Login = () => {
   const [form, setForm] = useState({
@@ -129,9 +129,9 @@ const Login = () => {
             {isLoading ? 'Signing in...' : 'Sign In'}
           </button>
 
-          <div className="text-center">
+          {/* <div className="text-center">
             Don't have an account? <Link to="/signup" className="text-decoration-none">Sign up</Link>
-          </div>
+          </div> */}
         </form>
       </div>
     </div>

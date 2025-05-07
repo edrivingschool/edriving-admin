@@ -1,7 +1,18 @@
-import { useState, useContext } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { signup, login } from '../services/auth';
+import { useContext, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
+import { login, signup } from '../services/auth';
+
+import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  Grid,
+  Paper,
+  TextField,
+  Typography,
+} from '@mui/material';
 
 const Signup = () => {
   const [form, setForm] = useState({
@@ -14,13 +25,13 @@ const Signup = () => {
 
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState(''); // New state for success message
+  const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
   const { updateAuthInfo } = useContext(AuthContext);
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!form.firstName.trim()) newErrors.firstName = 'First name is required';
     if (!form.lastName.trim()) newErrors.lastName = 'Last name is required';
     if (!form.email.trim()) {
@@ -52,9 +63,9 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-    
+
     setIsLoading(true);
-    
+
     try {
       const signupResponse = await signup(form);
       const loginResponse = await login({
@@ -66,9 +77,9 @@ const Signup = () => {
       localStorage.setItem('userData', JSON.stringify(loginResponse.user));
       updateAuthInfo({ isAuthenticated: true, user: loginResponse.user });
 
-      setSuccessMessage('Successfully signed up!'); // Set success message
-      setTimeout(() => navigate('/login'), 2000); // Redirect after 2 seconds
-      
+      setSuccessMessage('Successfully signed up!');
+      setTimeout(() => navigate('/login'), 2000);
+
     } catch (err) {
       console.error('Signup Error:', err);
       alert(err.response?.data?.message || 'Signup failed. Please try again.');
@@ -78,123 +89,107 @@ const Signup = () => {
   };
 
   return (
-    <div className="container-fluid d-flex justify-content-center align-items-center" style={{ minHeight: '100vh', backgroundColor: '#f8f9fa' }}>
-      <div className="card shadow p-4" style={{ width: '100%', maxWidth: '600px' }}>
-        <div className="text-center mb-4">
-          <h2 className="fw-bold">Get Started</h2>
-          <p className="text-muted">Create your account to continue</p>
-        </div>
+    <Box
+      sx={{
+        minHeight: '50vh',
+        minWidth: '70vw',
+        bgcolor: 'background.default',
+        color: 'text.primary',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        px: 2,
+      }}
+    >
+      <Paper elevation={3} sx={{ p: 4, width: '100%', maxWidth: 600 }}>
+        <Typography variant="h4" fontWeight="bold" gutterBottom textAlign="center">
+        Register a new user as admin
+        </Typography>
+        <Typography variant="body1" color="text.secondary" gutterBottom textAlign="center">
+          Please fill in the details below to create a new account.
+        </Typography>
 
-        {successMessage && ( // Display success message
-          <div className="alert alert-success text-center" role="alert">
+        {successMessage && (
+          <Alert severity="success" sx={{ mb: 2, textAlign: 'center' }}>
             {successMessage}
-          </div>
+          </Alert>
         )}
 
-        <form onSubmit={handleSubmit}>
-          <div className="row g-3">
-            <div className="col-md-6">
-              <div className="form-group">
-                <label htmlFor="firstName" className="form-label">First Name</label>
-                <input
-                  type="text"
-                  className={`form-control ${errors.firstName && 'is-invalid'}`}
-                  id="firstName"
-                  name="firstName"
-                  value={form.firstName}
-                  onChange={handleChange}
-                  placeholder="Enter first name"
-                />
-                {errors.firstName && <div className="invalid-feedback">{errors.firstName}</div>}
-              </div>
-            </div>
+<Box component="form" onSubmit={handleSubmit} noValidate>
+  <Grid container spacing={2} direction="column">
+    <Grid item>
+      <TextField
+        fullWidth
+        label="First Name"
+        name="firstName"
+        value={form.firstName}
+        onChange={handleChange}
+        error={!!errors.firstName}
+        helperText={errors.firstName}
+      />
+    </Grid>
+    <Grid item>
+      <TextField
+        fullWidth
+        label="Last Name"
+        name="lastName"
+        value={form.lastName}
+        onChange={handleChange}
+        error={!!errors.lastName}
+        helperText={errors.lastName}
+      />
+    </Grid>
+    <Grid item>
+      <TextField
+        fullWidth
+        label="Email"
+        name="email"
+        value={form.email}
+        onChange={handleChange}
+        error={!!errors.email}
+        helperText={errors.email}
+      />
+    </Grid>
+    <Grid item>
+      <TextField
+        fullWidth
+        label="Phone Number"
+        name="phoneNumber"
+        value={form.phoneNumber}
+        onChange={handleChange}
+        error={!!errors.phoneNumber}
+        helperText={errors.phoneNumber}
+      />
+    </Grid>
+    <Grid item>
+      <TextField
+        fullWidth
+        label="Password"
+        type="password"
+        name="password"
+        value={form.password}
+        onChange={handleChange}
+        error={!!errors.password}
+        helperText={errors.password}
+      />
+    </Grid>
+    <Grid item>
+      <Button
+        type="submit"
+        fullWidth
+        variant="contained"
+        size="large"
+        disabled={isLoading}
+        startIcon={isLoading && <CircularProgress size={20} color="inherit" />}
+      >
+        {isLoading ? 'Creating Account...' : 'Register'}
+      </Button>
+    </Grid>
+  </Grid>
+</Box>
 
-            <div className="col-md-6">
-              <div className="form-group">
-                <label htmlFor="lastName" className="form-label">Last Name</label>
-                <input
-                  type="text"
-                  className={`form-control ${errors.lastName && 'is-invalid'}`}
-                  id="lastName"
-                  name="lastName"
-                  value={form.lastName}
-                  onChange={handleChange}
-                  placeholder="Enter last name"
-                />
-                {errors.lastName && <div className="invalid-feedback">{errors.lastName}</div>}
-              </div>
-            </div>
-
-            <div className="col-12">
-              <div className="form-group">
-                <label htmlFor="email" className="form-label">Email</label>
-                <input
-                  type="email"
-                  className={`form-control ${errors.email && 'is-invalid'}`}
-                  id="email"
-                  name="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  placeholder="Enter email"
-                />
-                {errors.email && <div className="invalid-feedback">{errors.email}</div>}
-              </div>
-            </div>
-
-            <div className="col-12">
-              <div className="form-group">
-                <label htmlFor="phoneNumber" className="form-label">Phone Number</label>
-                <input
-                  type="tel"
-                  className={`form-control ${errors.phoneNumber && 'is-invalid'}`}
-                  id="phoneNumber"
-                  name="phoneNumber"
-                  value={form.phoneNumber}
-                  onChange={handleChange}
-                  placeholder="Enter phone number"
-                />
-                {errors.phoneNumber && <div className="invalid-feedback">{errors.phoneNumber}</div>}
-              </div>
-            </div>
-
-            <div className="col-12">
-              <div className="form-group">
-                <label htmlFor="password" className="form-label">Password</label>
-                <input
-                  type="password"
-                  className={`form-control ${errors.password && 'is-invalid'}`}
-                  id="password"
-                  name="password"
-                  value={form.password}
-                  onChange={handleChange}
-                  placeholder=""
-                />
-                {errors.password && <div className="invalid-feedback">{errors.password}</div>}
-              </div>
-            </div>
-
-            <div className="col-12">
-              <button 
-                type="submit" 
-                className="btn btn-primary w-100 py-2"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                    Creating Account...
-                  </>
-                ) : 'Sign Up'}
-              </button>
-            </div>
-
-            <div className="col-12 text-center mt-3">
-              Already have an account? <Link to="/login" className="text-decoration-none">Sign in</Link>
-            </div>
-          </div>
-        </form>
-      </div>
-    </div>
+      </Paper>
+    </Box>
   );
 };
 

@@ -1,29 +1,28 @@
-import React, { useState } from 'react';
-
 import {
-  Dashboard as DashboardIcon,
-  Report as ReportIcon,
-  People as PeopleIcon,
-  Notifications as NotificationsIcon,
-  History as HistoryIcon,
-  Person as PersonIcon,
-  Settings as SettingsIcon,
-  ExitToApp as ExitToAppIcon,
+  Add as AddIcon,
   AdminPanelSettings as AdminPanelIcon,
-  LightMode as LightModeIcon,
   DarkMode as DarkModeIcon,
-  Refresh as RefreshIcon,
-  PostAdd as PostAddIcon,
-  Group as GroupIcon,
+  Dashboard as DashboardIcon,
   Event as EventIcon,
+  ExitToApp as ExitToAppIcon,
+  Group as GroupIcon,
+  LightMode as LightModeIcon,
+  Notifications as NotificationsIcon,
+  People as PeopleIcon,
   PersonAdd as PersonAddIcon,
-  Add as AddIcon
+  Person as PersonIcon,
+  PostAdd as PostAddIcon,
+  Report as ReportIcon,
+  Settings as SettingsIcon
 } from '@mui/icons-material';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import SchoolIcon from '@mui/icons-material/School';
+
+
 import {
   AppBar,
   Avatar,
   Box,
-  Button,
   Card,
   CardContent,
   Chip,
@@ -39,14 +38,21 @@ import {
   ListItemText,
   Menu,
   MenuItem,
+  ThemeProvider,
   Toolbar,
   Typography,
   createTheme,
-  ThemeProvider,
   styled
 } from '@mui/material';
-import TeacherSignupPage from './TeacherSignupPage';
+import React, { useState } from 'react';
+import DocumentVerificationPage from './DocumentVerficationPage'; // Adjust the path if needed
+import ManageCourses from './ManageCourse'; // Adjust the path if needed
 import PendingEnrollmentsPage from './PendingEnrollmentsPage';
+import Signup from './Signup'; // Adjust the path if needed
+import TeacherSignupPage from './TeacherSignupPage';
+import UsersPage from './UsersPage'; // Adjust path if it's in a different folder
+import VerifyPaymentsPage from './VerifyPaymentsPage'; // Adjust the path if needed
+
 
 // Theme toggler
 const lightTheme = createTheme({ palette: { mode: 'light' } });
@@ -101,24 +107,34 @@ const Dashboard = () => {
 
   const screens = [
     <DashboardHome key="home" />,
-    <div key="reports">Reports</div>,
-    <div key="users">Users</div>,
-    <div key="notifs">Notifications</div>,
-    <div key="logs">Mod Logs</div>,
+    <UsersPage key="users" />, 
     <TeacherSignupPage key="teacher" />,
-    <PendingEnrollmentsPage key="pending-enrollments" />
-
+    <PendingEnrollmentsPage key="pending-enrollments" />,
+    <Signup key="admin-signup" />,
+    <ManageCourses key="manage-courses" />,
+    <DocumentVerificationPage key="document-verification" />,
+    <VerifyPaymentsPage key="verify-payments" />,
   ];
+  
+  
 
-  const titles = ['Dashboard', 'Reports', 'Users', 'Notifications', 'Mod Logs', 'Register Teacher', 'Pending Enrollments'];
+  const titles = ['Dashboard', 'Users',  'Register Teacher', 'Pending Enrollments', 'Register Admin','Manage Courses'
+, 'Document Verification', 'Verify Payments'
+  ];
   const navItems = [
     { icon: <DashboardIcon />, label: 'Dashboard' },
-    { icon: <ReportIcon />, label: 'Reports' },
+    // { icon: <ReportIcon />, label: 'Reports' },
     { icon: <PeopleIcon />, label: 'Users' },
-    { icon: <NotificationsIcon />, label: 'Notifications' },
-    { icon: <HistoryIcon />, label: 'Mod Logs' },
+    // { icon: <NotificationsIcon />, label: 'Notifications' },
+    // { icon: <HistoryIcon />, label: 'Mod Logs' },
     { icon: <PersonIcon />, label: 'Register Teacher' },
-    {icon:<PersonAddIcon />, label: 'Pending Enrollments'}
+    {icon:<PersonAddIcon />, label: 'Pending Enrollments'},
+    { icon: <PersonIcon />, label: 'Register Admin' },
+    { icon: <SchoolIcon />, label: 'Manage Courses' }, 
+    { icon: <CheckCircleIcon />, label: 'Document Verification' },
+    { icon: <CheckCircleIcon />, label: 'Verify Payments' },
+
+
   ];
 
   const handleProfileMenuOpen = (e) => setAnchorEl(e.currentTarget);

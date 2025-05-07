@@ -1,19 +1,22 @@
-import React, { useState, useEffect } from 'react';
 import {
   CheckCircle as ApproveIcon,
-  Cancel as RejectIcon,
-  HourglassEmpty as PendingIcon,
-  Refresh as RefreshIcon,
-  Person as StudentIcon,
   Class as CourseIcon,
   CalendarToday as DateIcon,
-  Info as DetailsIcon
+  Info as DetailsIcon,
+  AttachMoney as PaymentIcon,
+  HourglassEmpty as PendingIcon,
+  Cancel as RejectIcon,
+  Person as StudentIcon,
+  CheckCircle as VerifiedIcon
 } from '@mui/icons-material';
+
 import {
+  Avatar, // ✅ Added this line
   Box,
   Button,
   Card,
   CardContent,
+  Chip,
   CircularProgress,
   Container,
   Dialog,
@@ -23,6 +26,7 @@ import {
   Divider,
   Grid,
   IconButton,
+  Link,
   Paper,
   Table,
   TableBody,
@@ -30,19 +34,18 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Typography,
-  Chip,
-  TextField,
-  Avatar
+  Tooltip,
+  Typography
 } from '@mui/material';
+
+import React, { useEffect, useState } from 'react';
 
 const PendingEnrollmentsPage = () => {
   const [enrollments, setEnrollments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedEnrollment, setSelectedEnrollment] = useState(null);
+  const [payments, setPayments] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
-  const [filter, setFilter] = useState('all'); // 'all', 'withDocs', 'withoutDocs'
-  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetchPendingEnrollments();
@@ -51,7 +54,11 @@ const PendingEnrollmentsPage = () => {
   const fetchPendingEnrollments = async () => {
     try {
       setLoading(true);
-      const response = await fetch('https://driving-backend-stmb.onrender.com/api/admin/enrollments/pending');
+      const response = await fetch('http://localhost:3000/api/enrollments/admin/pending', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        }
+      });
       const data = await response.json();
       setEnrollments(data);
     } catch (error) {
@@ -61,16 +68,36 @@ const PendingEnrollmentsPage = () => {
     }
   };
 
+  const fetchPaymentsForEnrollment = async (enrollmentId) => {
+    try {
+      const response = await fetch(`http://localhost:3000/api/payments/enrollment/${enrollmentId}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+        }
+      });
+      const data = await response.json();
+      setPayments(data);
+    } catch (error) {
+      console.error('Error fetching payments:', error);
+    }
+  };
+
   const handleApprove = async (enrollmentId) => {
     try {
       setLoading(true);
       const response = await fetch(
-        `https://driving-backend-stmb.onrender.com/api/admin/enrollments/${enrollmentId}/approve`,
-        { method: 'POST' }
+        `http://localhost:3000/api/enrollments/${enrollmentId}/approve`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          }
+        }
       );
-      
+
       if (response.ok) {
         fetchPendingEnrollments();
+        setOpenDialog(false);
       }
     } catch (error) {
       console.error('Error approving enrollment:', error);
@@ -83,12 +110,18 @@ const PendingEnrollmentsPage = () => {
     try {
       setLoading(true);
       const response = await fetch(
-        `https://driving-backend-stmb.onrender.com/api/admin/enrollments/${enrollmentId}/reject`,
-        { method: 'POST' }
+        `http://localhost:3000/api/enrollments/${enrollmentId}/reject`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          }
+        }
       );
-      
+
       if (response.ok) {
         fetchPendingEnrollments();
+        setOpenDialog(false);
       }
     } catch (error) {
       console.error('Error rejecting enrollment:', error);
@@ -97,80 +130,59 @@ const PendingEnrollmentsPage = () => {
     }
   };
 
-  const handleViewDetails = (enrollment) => {
+  const handleVerifyPayment = async (paymentId) => {
+    try {
+      setLoading(true);
+      const response = await fetch(
+        `http://localhost:3000/api/payments/${paymentId}/verify`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+          }
+        }
+      );
+
+      if (response.ok) {
+        if (selectedEnrollment) {
+          fetchPaymentsForEnrollment(selectedEnrollment.id);
+        }
+        fetchPendingEnrollments();
+      }
+    } catch (error) {
+      console.error('Error verifying payment:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleViewDetails = async (enrollment) => {
     setSelectedEnrollment(enrollment);
+    await fetchPaymentsForEnrollment(enrollment.id);
     setOpenDialog(true);
   };
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setSelectedEnrollment(null);
+    setPayments([]);
   };
 
-  const filteredEnrollments = enrollments.filter(enrollment => {
-    // Filter by document status
-    const docFilter = filter === 'all' || 
-                     (filter === 'withDocs' && enrollment.student_id !== null) || 
-                     (filter === 'withoutDocs' && enrollment.student_id === null);
-    
-    // Filter by search term
-    const searchFilter = searchTerm === '' || 
-                        (enrollment.course_id && enrollment.course_id.toLowerCase().includes(searchTerm.toLowerCase())) ||
-                        (enrollment.enrolled_at && enrollment.enrolled_at.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    return docFilter && searchFilter;
-  });
+  const hasVerifiedPayment = (enrollment) => {
+    return enrollment.has_verified_payment;
+  };
 
   return (
     <Container maxWidth="lg">
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4">Pending Enrollments</Typography>
-        <Box display="flex" alignItems="center" gap={2}>
-          <TextField
-            size="small"
-            placeholder="Search..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <Button
-            variant="outlined"
-            startIcon={<RefreshIcon />}
-            onClick={fetchPendingEnrollments}
-            disabled={loading}
-          >
-            Refresh
-          </Button>
-        </Box>
-      </Box>
-
-      <Box mb={3}>
-        <Chip
-          label="All"
-          variant={filter === 'all' ? 'filled' : 'outlined'}
-          color="primary"
-          onClick={() => setFilter('all')}
-          sx={{ mr: 1 }}
-        />
-        <Chip
-          label="With Documents"
-          variant={filter === 'withDocs' ? 'filled' : 'outlined'}
-          color="success"
-          onClick={() => setFilter('withDocs')}
-          sx={{ mr: 1 }}
-        />
-        <Chip
-          label="Without Documents"
-          variant={filter === 'withoutDocs' ? 'filled' : 'outlined'}
-          color="warning"
-          onClick={() => setFilter('withoutDocs')}
-        />
       </Box>
 
       {loading && enrollments.length === 0 ? (
         <Box display="flex" justifyContent="center" mt={4}>
           <CircularProgress />
         </Box>
-      ) : filteredEnrollments.length === 0 ? (
+      ) : enrollments.length === 0 ? (
         <Typography variant="body1" color="textSecondary">
           No pending enrollments found.
         </Typography>
@@ -179,49 +191,48 @@ const PendingEnrollmentsPage = () => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Enrollment ID</TableCell>
                 <TableCell>Student</TableCell>
                 <TableCell>Course</TableCell>
-                <TableCell>Status</TableCell>
+                <TableCell>Payment Status</TableCell>
                 <TableCell>Enrolled At</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredEnrollments.map((enrollment) => (
+              {enrollments.map((enrollment) => (
                 <TableRow key={enrollment.id}>
-                  <TableCell>{enrollment.id.substring(0, 8)}...</TableCell>
                   <TableCell>
-                    {enrollment.student_id ? (
-                      <Chip
-                        avatar={<Avatar><StudentIcon fontSize="small" /></Avatar>}
-                        label={`Student ID: ${enrollment.student_id}`}
-                        color="success"
-                        size="small"
-                      />
-                    ) : (
-                      <Chip
-                        label="Documents Not Submitted"
-                        color="warning"
-                        size="small"
-                      />
-                    )}
+                    <Chip
+                      avatar={<Avatar><StudentIcon fontSize="small" /></Avatar>}
+                      label={`Student ID: ${enrollment.student_id || 'N/A'}`}
+                      color={enrollment.student_id ? "success" : "default"}
+                      size="small"
+                    />
                   </TableCell>
                   <TableCell>
                     <Chip
                       icon={<CourseIcon fontSize="small" />}
-                      label={`Course ID: ${enrollment.course_id.substring(0, 8)}...`}
+                      label={`Course ID: ${enrollment.course_id ? enrollment.course_id.substring(0, 8) + '...' : 'N/A'}`}
                       variant="outlined"
                       size="small"
                     />
                   </TableCell>
                   <TableCell>
-                    <Chip
-                      icon={<PendingIcon fontSize="small" />}
-                      label="Pending"
-                      color="info"
-                      size="small"
-                    />
+                    {hasVerifiedPayment(enrollment) ? (
+                      <Chip
+                        icon={<VerifiedIcon fontSize="small" />}
+                        label="Verified"
+                        color="success"
+                        size="small"
+                      />
+                    ) : (
+                      <Chip
+                        icon={<PaymentIcon fontSize="small" />}
+                        label="Pending"
+                        color="warning"
+                        size="small"
+                      />
+                    )}
                   </TableCell>
                   <TableCell>
                     <Box display="flex" alignItems="center">
@@ -237,17 +248,24 @@ const PendingEnrollmentsPage = () => {
                     >
                       <DetailsIcon />
                     </IconButton>
-                    <Button
-                      variant="contained"
-                      size="small"
-                      color="success"
-                      startIcon={<ApproveIcon />}
-                      onClick={() => handleApprove(enrollment.id)}
-                      disabled={loading}
-                      sx={{ mr: 1 }}
+                    <Tooltip
+                      title={!hasVerifiedPayment(enrollment) ? "Payment must be verified first" : ""}
+                      arrow
                     >
-                      Approve
-                    </Button>
+                      <span>
+                        <Button
+                          variant="contained"
+                          size="small"
+                          color="success"
+                          startIcon={<ApproveIcon />}
+                          onClick={() => handleApprove(enrollment.id)}
+                          disabled={loading || !hasVerifiedPayment(enrollment)}
+                          sx={{ mr: 1 }}
+                        >
+                          Approve
+                        </Button>
+                      </span>
+                    </Tooltip>
                     <Button
                       variant="outlined"
                       size="small"
@@ -299,64 +317,72 @@ const PendingEnrollmentsPage = () => {
                           size="small"
                         />
                       </Grid>
-                      <Grid item xs={6}>
-                        <Typography variant="body2" color="textSecondary">
-                          Enrolled At
-                        </Typography>
-                        <Typography variant="body1">
-                          {new Date(selectedEnrollment.enrolled_at).toLocaleString()}
-                        </Typography>
-                      </Grid>
-                      <Grid item xs={6}>
-                        <Typography variant="body2" color="textSecondary">
-                          Documents Submitted
-                        </Typography>
-                        <Typography variant="body1">
-                          {selectedEnrollment.student_id ? 'Yes' : 'No'}
-                        </Typography>
-                      </Grid>
                     </Grid>
                   </CardContent>
                 </Card>
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12}>
                 <Card variant="outlined">
                   <CardContent>
                     <Typography variant="h6" gutterBottom>
-                      Course Information
+                      Payment Information
                     </Typography>
-                    <Typography variant="body2" color="textSecondary">
-                      Course ID
-                    </Typography>
-                    <Typography variant="body1" gutterBottom>
-                      {selectedEnrollment.course_id}
-                    </Typography>
-                    {/* You would fetch and display more course details here */}
-                  </CardContent>
-                </Card>
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <Card variant="outlined">
-                  <CardContent>
-                    <Typography variant="h6" gutterBottom>
-                      Student Information
-                    </Typography>
-                    {selectedEnrollment.student_id ? (
-                      <>
-                        <Typography variant="body2" color="textSecondary">
-                          Student ID
-                        </Typography>
-                        <Typography variant="body1" gutterBottom>
-                          {selectedEnrollment.student_id}
-                        </Typography>
-                        {/* You would fetch and display student details here */}
-                      </>
+                    {payments.length === 0 ? (
+                      <Typography color="textSecondary">No payments found</Typography>
                     ) : (
-                      <Typography variant="body1" color="textSecondary">
-                        Student documents not yet submitted
-                      </Typography>
+                      payments.map(payment => (
+                        <Box key={payment.id} sx={{ mb: 2 }}>
+                          <Grid container spacing={2}>
+                            <Grid item xs={12} sm={4}>
+                              <Typography variant="body2" color="textSecondary">
+                                Amount
+                              </Typography>
+                              <Typography variant="body1">${payment.amount}</Typography>
+                            </Grid>
+                            <Grid item xs={12} sm={4}>
+                              <Typography variant="body2" color="textSecondary">
+                                Status
+                              </Typography>
+                              <Typography variant="body1">
+                                {payment.verified ? (
+                                  <Chip label="Verified" color="success" size="small" />
+                                ) : (
+                                  <Chip label="Pending" color="warning" size="small" />
+                                )}
+                              </Typography>
+                            </Grid>
+                            {payment.payment_proof_url && (
+                              <Grid item xs={12} sm={4}>
+                                <Typography variant="body2" color="textSecondary">
+                                  Payment Proof
+                                </Typography>
+                                <Link
+                                  href={payment.payment_proof_url}
+                                  target="_blank"
+                                  rel="noopener"
+                                  underline="hover"
+                                >
+                                  View Proof
+                                </Link>
+                              </Grid>
+                            )}
+                          </Grid>
+                          {!payment.verified && (
+                            <Button
+                              onClick={() => handleVerifyPayment(payment.id)}
+                              startIcon={<VerifiedIcon />}
+                              variant="contained"
+                              color="success"
+                              sx={{ mt: 2 }}
+                              disabled={loading}
+                            >
+                              Verify Payment
+                            </Button>
+                          )}
+                          <Divider sx={{ my: 2 }} />
+                        </Box>
+                      ))
                     )}
                   </CardContent>
                 </Card>
@@ -368,22 +394,29 @@ const PendingEnrollmentsPage = () => {
           <Button onClick={handleCloseDialog}>Close</Button>
           {selectedEnrollment && (
             <>
-              <Button 
-                onClick={() => handleReject(selectedEnrollment.id)} 
+              <Button
+                onClick={() => handleReject(selectedEnrollment.id)}
                 color="error"
                 variant="outlined"
                 disabled={loading}
               >
                 Reject
               </Button>
-              <Button 
-                onClick={() => handleApprove(selectedEnrollment.id)} 
-                color="success"
-                variant="contained"
-                disabled={loading}
+              <Tooltip
+                title={!hasVerifiedPayment(selectedEnrollment) ? "Payment must be verified first" : ""}
+                arrow
               >
-                Approve
-              </Button>
+                <span>
+                  <Button
+                    onClick={() => handleApprove(selectedEnrollment.id)}
+                    color="success"
+                    variant="contained"
+                    disabled={loading || !hasVerifiedPayment(selectedEnrollment)}
+                  >
+                    Approve
+                  </Button>
+                </span>
+              </Tooltip>
             </>
           )}
         </DialogActions>
