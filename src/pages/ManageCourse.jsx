@@ -1,30 +1,30 @@
 // src/pages/dashboard/ManageCourses.js
 import { Add, ArrowBack, Delete, Edit } from '@mui/icons-material';
 import {
-    Alert,
-    Box,
-    Button,
-    Card,
-    CardActions,
-    CardContent,
-    CardMedia,
-    Chip,
-    CircularProgress,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogContentText,
-    DialogTitle,
-    Divider,
-    Grid,
-    IconButton,
-    List,
-    ListItem,
-    ListItemText,
-    Snackbar,
-    TextField,
-    Typography,
-    useTheme
+  Alert,
+  Box,
+  Button,
+  Card,
+  CardActions,
+  CardContent,
+  CardMedia,
+  Chip,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Divider,
+  Grid,
+  IconButton,
+  List,
+  ListItem,
+  ListItemText,
+  Snackbar,
+  TextField,
+  Typography,
+  useTheme
 } from '@mui/material';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
@@ -49,7 +49,7 @@ const LessonManagement = ({ courseId, onBack }) => {
 
   const fetchLessons = async () => {
     try {
-      const res = await axios.get(`http://localhost:3000/api/lessons/course/${courseId}`);
+      const res = await axios.get(`https://driving-backend-stmb.onrender.com/api/lessons/course/${courseId}`);
       setLessons(res.data);
       setLoading(false);
     } catch (err) {
@@ -69,7 +69,7 @@ const LessonManagement = ({ courseId, onBack }) => {
 
   const handleDeleteConfirm = async () => {
     try {
-      await axios.delete(`http://localhost:3000/api/lessons/${lessonToDelete}`);
+      await axios.delete(`https://driving-backend-stmb.onrender.com/api/lessons/${lessonToDelete}`);
       setSuccess('Lesson deleted successfully');
       fetchLessons();
     } catch (err) {
@@ -105,7 +105,7 @@ const LessonManagement = ({ courseId, onBack }) => {
 
   const handleAddSubmit = async () => {
     try {
-      await axios.post('http://localhost:3000/api/lessons/', currentLesson);
+      await axios.post('https://driving-backend-stmb.onrender.com/api/lessons/', currentLesson);
       setSuccess('Lesson added successfully');
       setAddDialogOpen(false);
       fetchLessons();
@@ -116,7 +116,7 @@ const LessonManagement = ({ courseId, onBack }) => {
 
   const handleEditSubmit = async () => {
     try {
-      await axios.put(`http://localhost:3000/api/lessons/${currentLesson.id}`, currentLesson);
+      await axios.put(`https://driving-backend-stmb.onrender.com/api/lessons/${currentLesson.id}`, currentLesson);
       setSuccess('Lesson updated successfully');
       setEditDialogOpen(false);
       fetchLessons();
@@ -360,7 +360,7 @@ const ManageCourses = () => {
 
   const fetchCourses = async () => {
     try {
-      const res = await axios.get('http://localhost:3000/api/admin/course/all');
+      const res = await axios.get('https://driving-backend-stmb.onrender.com/api/admin/course/all');
       setCourses(res.data.data);
       setLoading(false);
     } catch (err) {
@@ -459,7 +459,7 @@ const ManageCourses = () => {
       <Card sx={{ 
         mb: 4, 
         p: 2, 
-        backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[800] : '#f5f5f5'
+        backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[900] : '#f5f5f5'
       }}>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
@@ -515,7 +515,7 @@ const ManageCourses = () => {
               label="Description"
               name="description"
               multiline
-              rows={3}
+              rows={2}
               value={form.description}
               onChange={handleChange}
               variant="outlined"

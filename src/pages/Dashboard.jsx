@@ -1,25 +1,21 @@
 import {
   Add as AddIcon,
   AdminPanelSettings as AdminPanelIcon,
+  CheckCircle as CheckCircleIcon,
   DarkMode as DarkModeIcon,
   Dashboard as DashboardIcon,
-  Event as EventIcon,
+  Description as DescriptionIcon,
   ExitToApp as ExitToAppIcon,
-  Group as GroupIcon,
   LightMode as LightModeIcon,
-  Notifications as NotificationsIcon,
+  Payment as PaymentIcon,
   People as PeopleIcon,
   PersonAdd as PersonAddIcon,
   Person as PersonIcon,
-  PostAdd as PostAddIcon,
-  Report as ReportIcon,
-  Settings as SettingsIcon
+  School as SchoolIcon
 } from '@mui/icons-material';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import SchoolIcon from '@mui/icons-material/School';
-
 
 import {
+  Alert,
   AppBar,
   Avatar,
   Box,
@@ -32,6 +28,7 @@ import {
   Drawer,
   Grid,
   IconButton,
+  LinearProgress,
   List,
   ListItemButton,
   ListItemIcon,
@@ -44,23 +41,24 @@ import {
   createTheme,
   styled
 } from '@mui/material';
-import React, { useState } from 'react';
-import DocumentVerificationPage from './DocumentVerficationPage'; // Adjust the path if needed
-import ManageCourses from './ManageCourse'; // Adjust the path if needed
+
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import DocumentVerificationPage from './DocumentVerficationPage';
+import ManageCourses from './ManageCourse';
 import PendingEnrollmentsPage from './PendingEnrollmentsPage';
-import Signup from './Signup'; // Adjust the path if needed
+import Signup from './Signup';
 import TeacherSignupPage from './TeacherSignupPage';
-import UsersPage from './UsersPage'; // Adjust path if it's in a different folder
-import VerifyPaymentsPage from './VerifyPaymentsPage'; // Adjust the path if needed
+import UsersPage from './UsersPage';
+import VerifyPaymentsPage from './VerifyPaymentsPage';
 
-
-// Theme toggler
+// Themes
 const lightTheme = createTheme({ palette: { mode: 'light' } });
 const darkTheme = createTheme({ palette: { mode: 'dark' } });
 
 const drawerWidth = 260;
 
-// Styled components
+// Styled Components
 const Sidebar = styled(Drawer)(({ theme }) => ({
   '& .MuiDrawer-paper': {
     width: drawerWidth,
@@ -106,40 +104,41 @@ const Dashboard = () => {
   const theme = themeMode === 'light' ? lightTheme : darkTheme;
 
   const screens = [
-    <DashboardHome key="home" />,
-    <UsersPage key="users" />, 
+    <DashboardHome key="home" setSelectedIndex={setSelectedIndex} />,
+    <UsersPage key="users" />,
     <TeacherSignupPage key="teacher" />,
     <PendingEnrollmentsPage key="pending-enrollments" />,
     <Signup key="admin-signup" />,
     <ManageCourses key="manage-courses" />,
     <DocumentVerificationPage key="document-verification" />,
-    <VerifyPaymentsPage key="verify-payments" />,
+    <VerifyPaymentsPage key="verify-payments" />
   ];
-  
-  
 
-  const titles = ['Dashboard', 'Users',  'Register Teacher', 'Pending Enrollments', 'Register Admin','Manage Courses'
-, 'Document Verification', 'Verify Payments'
+  const titles = [
+    'Dashboard',
+    'Users',
+    'Register Teacher',
+    'Pending Enrollments',
+    'Register Admin',
+    'Manage Courses',
+    'Document Verification',
+    'Verify Payments'
   ];
+
   const navItems = [
     { icon: <DashboardIcon />, label: 'Dashboard' },
-    // { icon: <ReportIcon />, label: 'Reports' },
     { icon: <PeopleIcon />, label: 'Users' },
-    // { icon: <NotificationsIcon />, label: 'Notifications' },
-    // { icon: <HistoryIcon />, label: 'Mod Logs' },
     { icon: <PersonIcon />, label: 'Register Teacher' },
-    {icon:<PersonAddIcon />, label: 'Pending Enrollments'},
+    { icon: <PersonAddIcon />, label: 'Pending Enrollments' },
     { icon: <PersonIcon />, label: 'Register Admin' },
-    { icon: <SchoolIcon />, label: 'Manage Courses' }, 
+    { icon: <SchoolIcon />, label: 'Manage Courses' },
     { icon: <CheckCircleIcon />, label: 'Document Verification' },
-    { icon: <CheckCircleIcon />, label: 'Verify Payments' },
-
-
+    { icon: <CheckCircleIcon />, label: 'Verify Payments' }
   ];
 
   const handleProfileMenuOpen = (e) => setAnchorEl(e.currentTarget);
   const handleProfileMenuClose = () => setAnchorEl(null);
-  const toggleTheme = () => setThemeMode(prev => prev === 'light' ? 'dark' : 'light');
+  const toggleTheme = () => setThemeMode(prev => (prev === 'light' ? 'dark' : 'light'));
 
   return (
     <ThemeProvider theme={theme}>
@@ -168,10 +167,12 @@ const Dashboard = () => {
           <Divider />
           <List>
             <NavItem onClick={toggleTheme}>
-              <ListItemIcon>{themeMode === 'light' ? <DarkModeIcon /> : <LightModeIcon />}</ListItemIcon>
+              <ListItemIcon>
+                {themeMode === 'light' ? <DarkModeIcon /> : <LightModeIcon />}
+              </ListItemIcon>
               <ListItemText primary={themeMode === 'light' ? 'Dark Mode' : 'Light Mode'} />
             </NavItem>
-            <NavItem onClick={() => {/* logout logic */}}>
+            <NavItem onClick={() => {/* logout logic */ }}>
               <ListItemIcon><ExitToAppIcon /></ListItemIcon>
               <ListItemText primary="Logout" />
             </NavItem>
@@ -179,19 +180,24 @@ const Dashboard = () => {
         </Sidebar>
 
         <MainContainer>
-          <AppBar position="fixed" color="inherit" elevation={1} sx={{ ml: drawerWidth, width: `calc(100% - ${drawerWidth}px)` }}>
+          <AppBar
+            position="fixed"
+            color="inherit"
+            elevation={1}
+            sx={{ ml: drawerWidth, width: `calc(100% - ${drawerWidth}px)` }}
+          >
             <Toolbar sx={{ justifyContent: 'space-between' }}>
               <Typography variant="h6" noWrap>{titles[selectedIndex]}</Typography>
               <Box>
                 <IconButton onClick={toggleTheme} sx={{ mr: 1 }}>
                   {themeMode === 'light' ? <DarkModeIcon /> : <LightModeIcon />}
                 </IconButton>
-                <IconButton color="inherit" onClick={handleProfileMenuOpen}>  
+                <IconButton color="inherit" onClick={handleProfileMenuOpen}>
                   <Avatar><PersonAddIcon /></Avatar>
                 </IconButton>
                 <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleProfileMenuClose}>
                   <MenuItem onClick={handleProfileMenuClose}>Settings</MenuItem>
-                  <MenuItem onClick={() => {/* logout */}}>Logout</MenuItem>
+                  <MenuItem onClick={() => {/* logout */ }}>Logout</MenuItem>
                 </Menu>
               </Box>
             </Toolbar>
@@ -206,42 +212,104 @@ const Dashboard = () => {
   );
 };
 
-const DashboardHome = () => {
-  const stats = { totalUsers: 1243, activeUsers: 892, newUsers: 42, pendingReports: 17, totalPosts: 5432, totalGroups: 156, totalEvents: 89 };
+// DashboardHome with Quick Actions
+const DashboardHome = ({ setSelectedIndex }) => {
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    enrolledUsers: 0,
+    totalCourses: 0,
+    pendingEnrollments: 0,
+    pendingDocuments: 0,
+    pendingPayments: 0,
+    verifiedUsers: 0,
+    totalTeachers: 0,
+    loading: true,
+    error: null
+  });
+
+  useEffect(() => {
+    const fetchDashboardStats = async () => {
+      try {
+        const token = localStorage.getItem('authToken');
+        const response = await axios.get('http://localhost:3000/api/stats/dashboard', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        setStats({
+          ...response.data.stats,
+          loading: false,
+          error: null
+        });
+      } catch (error) {
+        console.error('Error fetching dashboard stats:', error);
+        setStats(prev => ({
+          ...prev,
+          loading: false,
+          error: 'Failed to load dashboard statistics'
+        }));
+      }
+    };
+
+    fetchDashboardStats();
+  }, []);
+
+  if (stats.loading) {
+    return (
+      <Container maxWidth="lg">
+        <Typography variant="h4" gutterBottom>Loading Dashboard...</Typography>
+        <LinearProgress />
+      </Container>
+    );
+  }
+
+  if (stats.error) {
+    return (
+      <Container maxWidth="lg">
+        <Typography variant="h4" gutterBottom>Dashboard</Typography>
+        <Alert severity="error">{stats.error}</Alert>
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth="lg">
-      <Typography variant="h4" gutterBottom>Overview</Typography>
+      <Typography variant="h4" gutterBottom>Admin Overview</Typography>
       <Grid container spacing={3} mb={4}>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard title="Total Users" value={stats.totalUsers} icon={PeopleIcon} color="#1976d2" />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <StatCard title="Active Users" value={stats.activeUsers} icon={PersonIcon} color="#4caf50" />
+          <StatCard title="Users currently taking courses" value={stats.enrolledUsers} icon={SchoolIcon} color="#4caf50" />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <StatCard title="New Users" value={stats.newUsers} icon={PersonAddIcon} color="#ff9800" />
+          <StatCard title="Users with verified document" value={stats.verifiedUsers} icon={CheckCircleIcon} color="#009688" />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <StatCard title="Pending Reports" value={stats.pendingReports} icon={ReportIcon} color="#f44336" />
+          <StatCard title="Total Teachers" value={stats.totalTeachers} icon={SchoolIcon} color="#673ab7" />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <StatCard title="Total Posts" value={stats.totalPosts} icon={PostAddIcon} color="#9c27b0" />
+          <StatCard title="Total Courses" value={stats.totalCourses} icon={SchoolIcon} color="#9c27b0" />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <StatCard title="Total Groups" value={stats.totalGroups} icon={GroupIcon} color="#009688" />
+          <StatCard title="Pending Enrollments" value={stats.pendingEnrollments} icon={PersonAddIcon} color="#ff9800" />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <StatCard title="Total Events" value={stats.totalEvents} icon={EventIcon} color="#3f51b5" />
+          <StatCard title="Pending Documents" value={stats.pendingDocuments} icon={DescriptionIcon} color="#f44336" />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard title="Pending Payments" value={stats.pendingPayments} icon={PaymentIcon} color="#3f51b5" />
         </Grid>
       </Grid>
+
       <Card sx={{ boxShadow: 3, borderRadius: 2 }}>
         <CardContent>
           <Typography variant="h6" gutterBottom>Quick Actions</Typography>
           <Box display="flex" flexWrap="wrap" gap={1}>
-            <Chip icon={<AddIcon />} label="New User" clickable />
-            <Chip icon={<NotificationsIcon />} label="Send Alert" clickable />
-            <Chip icon={<SettingsIcon />} label="Settings" clickable />
+            <Chip icon={<AddIcon />} label="New Course" clickable onClick={() => setSelectedIndex(5)} />
+            <Chip icon={<CheckCircleIcon />} label="Verify Documents" clickable onClick={() => setSelectedIndex(6)} />
+            <Chip icon={<PaymentIcon />} label="Process Payments" clickable onClick={() => setSelectedIndex(7)} />
           </Box>
         </CardContent>
       </Card>

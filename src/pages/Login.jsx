@@ -1,7 +1,10 @@
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { login } from '../services/auth'; // Import the auth service
+import { login } from '../services/auth'; // Your login service
 
 const Login = () => {
   const [form, setForm] = useState({
@@ -12,17 +15,22 @@ const Login = () => {
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [serverError, setServerError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(prev => !prev);
+  };
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!form.email.trim()) {
       newErrors.email = 'Email is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
       newErrors.email = 'Please enter a valid email';
     }
-    
+
     if (!form.password) {
       newErrors.password = 'Password is required';
     }
@@ -41,21 +49,19 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-    
+
     setIsLoading(true);
     setServerError('');
-    
+
     try {
-      // Use the auth service instead of direct axios call
       const response = await login({
         email: form.email,
         password: form.password
       });
-      
+
       localStorage.setItem('authToken', response.token);
       localStorage.setItem('userData', JSON.stringify(response.user));
       navigate('/Dashboard');
-      
     } catch (err) {
       console.error('Login Error:', err);
       if (err.response?.data?.error) {
@@ -97,17 +103,30 @@ const Login = () => {
             {errors.email && <div className="invalid-feedback">{errors.email}</div>}
           </div>
 
-          <div className="mb-4">
+          <div className="mb-4 position-relative">
             <label htmlFor="password" className="form-label">Password</label>
             <input
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               className={`form-control ${errors.password && 'is-invalid'}`}
               id="password"
               name="password"
               value={form.password}
               onChange={handleChange}
-              placeholder=""
+              placeholder="Enter your password"
             />
+            <span
+              onClick={togglePasswordVisibility}
+              style={{
+                position: 'absolute',
+                right: '10px',
+                top: '38px',
+                cursor: 'pointer',
+                zIndex: 10,
+                color: '#6c757d'
+              }}
+            >
+              <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+            </span>
             {errors.password && <div className="invalid-feedback">{errors.password}</div>}
           </div>
 
@@ -121,8 +140,8 @@ const Login = () => {
             <Link to="/forgot-password" className="text-decoration-none">Forgot password?</Link>
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="btn btn-primary w-100 py-2 mb-3"
             disabled={isLoading}
           >

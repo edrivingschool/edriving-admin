@@ -1,7 +1,7 @@
+import axios from 'axios';
 import { useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
-import { login, signup } from '../services/auth';
 
 import {
   Alert,
@@ -19,8 +19,7 @@ const Signup = () => {
     firstName: '',
     lastName: '',
     email: '',
-    phoneNumber: '',
-    password: ''
+    password: '',
   });
 
   const [errors, setErrors] = useState({});
@@ -31,18 +30,12 @@ const Signup = () => {
 
   const validateForm = () => {
     const newErrors = {};
-
     if (!form.firstName.trim()) newErrors.firstName = 'First name is required';
     if (!form.lastName.trim()) newErrors.lastName = 'Last name is required';
     if (!form.email.trim()) {
       newErrors.email = 'Email is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
       newErrors.email = 'Please enter a valid email';
-    }
-    if (!form.phoneNumber.trim()) {
-      newErrors.phoneNumber = 'Phone number is required';
-    } else if (!/^\d{10,15}$/.test(form.phoneNumber)) {
-      newErrors.phoneNumber = 'Invalid phone number';
     }
     if (!form.password) {
       newErrors.password = 'Password is required';
@@ -56,8 +49,8 @@ const Signup = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
+    setForm((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }));
   };
 
   const handleSubmit = async (e) => {
@@ -65,27 +58,43 @@ const Signup = () => {
     if (!validateForm()) return;
 
     setIsLoading(true);
+    setSuccessMessage('');
 
     try {
-      const signupResponse = await signup(form);
-      const loginResponse = await login({
-        identifier: form.email,
-        password: form.password
+      const signupRes = await axios.post(
+        'https://driving-backend-stmb.onrender.com/api/admin/signup',
+        form,
+        {
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    
+      console.log('Signup successful:', signupRes.data);
+    
+      // Clear form fields
+      setForm({
+        firstName: '',
+        lastName: '',
+        email: '',
+        password: '',
       });
-
-      localStorage.setItem('authToken', loginResponse.token);
-      localStorage.setItem('userData', JSON.stringify(loginResponse.user));
-      updateAuthInfo({ isAuthenticated: true, user: loginResponse.user });
-
-      setSuccessMessage('Successfully signed up!');
-      setTimeout(() => navigate('/login'), 2000);
-
+    
+      // Show success message
+      setSuccessMessage('Admin registered successfully!');
+    
+      // Optional: Auto-hide success message
+      setTimeout(() => {
+        setSuccessMessage('');
+      }, 3000);
+      
     } catch (err) {
-      console.error('Signup Error:', err);
-      alert(err.response?.data?.message || 'Signup failed. Please try again.');
-    } finally {
-      setIsLoading(false);
+      console.error('Signup Error:', err?.response?.data || err.message);
+      const message = err?.response?.data?.message || 'Signup failed. Please try again.';
+      alert(message);
     }
+    finally {
+      setIsLoading(false);
+    }    
   };
 
   return (
@@ -103,7 +112,7 @@ const Signup = () => {
     >
       <Paper elevation={3} sx={{ p: 4, width: '100%', maxWidth: 600 }}>
         <Typography variant="h4" fontWeight="bold" gutterBottom textAlign="center">
-        Register a new user as admin
+          Register a new user as admin
         </Typography>
         <Typography variant="body1" color="text.secondary" gutterBottom textAlign="center">
           Please fill in the details below to create a new account.
@@ -115,79 +124,67 @@ const Signup = () => {
           </Alert>
         )}
 
-<Box component="form" onSubmit={handleSubmit} noValidate>
-  <Grid container spacing={2} direction="column">
-    <Grid item>
-      <TextField
-        fullWidth
-        label="First Name"
-        name="firstName"
-        value={form.firstName}
-        onChange={handleChange}
-        error={!!errors.firstName}
-        helperText={errors.firstName}
-      />
-    </Grid>
-    <Grid item>
-      <TextField
-        fullWidth
-        label="Last Name"
-        name="lastName"
-        value={form.lastName}
-        onChange={handleChange}
-        error={!!errors.lastName}
-        helperText={errors.lastName}
-      />
-    </Grid>
-    <Grid item>
-      <TextField
-        fullWidth
-        label="Email"
-        name="email"
-        value={form.email}
-        onChange={handleChange}
-        error={!!errors.email}
-        helperText={errors.email}
-      />
-    </Grid>
-    <Grid item>
-      <TextField
-        fullWidth
-        label="Phone Number"
-        name="phoneNumber"
-        value={form.phoneNumber}
-        onChange={handleChange}
-        error={!!errors.phoneNumber}
-        helperText={errors.phoneNumber}
-      />
-    </Grid>
-    <Grid item>
-      <TextField
-        fullWidth
-        label="Password"
-        type="password"
-        name="password"
-        value={form.password}
-        onChange={handleChange}
-        error={!!errors.password}
-        helperText={errors.password}
-      />
-    </Grid>
-    <Grid item>
-      <Button
-        type="submit"
-        fullWidth
-        variant="contained"
-        size="large"
-        disabled={isLoading}
-        startIcon={isLoading && <CircularProgress size={20} color="inherit" />}
-      >
-        {isLoading ? 'Creating Account...' : 'Register'}
-      </Button>
-    </Grid>
-  </Grid>
-</Box>
-
+        <Box component="form" onSubmit={handleSubmit} noValidate>
+          <Grid container spacing={2} direction="column">
+            <Grid item>
+              <TextField
+                fullWidth
+                label="First Name"
+                name="firstName"
+                value={form.firstName}
+                onChange={handleChange}
+                error={!!errors.firstName}
+                helperText={errors.firstName}
+              />
+            </Grid>
+            <Grid item>
+              <TextField
+                fullWidth
+                label="Last Name"
+                name="lastName"
+                value={form.lastName}
+                onChange={handleChange}
+                error={!!errors.lastName}
+                helperText={errors.lastName}
+              />
+            </Grid>
+            <Grid item>
+              <TextField
+                fullWidth
+                label="Email"
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+                error={!!errors.email}
+                helperText={errors.email}
+              />
+            </Grid>
+            <Grid item>
+              <TextField
+                fullWidth
+                label="Password"
+                type="password"
+                name="password"
+                value={form.password}
+                onChange={handleChange}
+                error={!!errors.password}
+                helperText={errors.password}
+              />
+            </Grid>
+            <Grid item>
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                size="large"
+                disabled={isLoading}
+                startIcon={isLoading && <CircularProgress size={20} color="inherit" />}
+              >
+                {isLoading ? 'Creating Account...' : 'Register'}
+              </Button>
+            </Grid>
+          </Grid>
+        </Box>
       </Paper>
     </Box>
   );

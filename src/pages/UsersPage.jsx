@@ -26,7 +26,7 @@ const UsersPage = () => {
 
   const fetchUsers = async () => {
     try {
-      const res = await axios.get('http://localhost:3000/api/auth/users/', getAuthHeader());
+      const res = await axios.get('https://driving-backend-stmb.onrender.com/api/auth/users/', getAuthHeader());
       setUsers(res.data);
     } catch (error) {
       console.error('Error fetching users:', error);

@@ -40,7 +40,7 @@ const PaymentVerificationPage = () => {
   const fetchPendingPayments = async () => {
     try {
       const res = await axios.get(
-        'http://localhost:3000/api/payments/pending',
+        'https://driving-backend-stmb.onrender.com/api/payments/pending',
         getAuthHeader()
       );
       setPayments(res.data);
@@ -59,7 +59,7 @@ const PaymentVerificationPage = () => {
     try {
       setProcessingId(paymentId);
       await axios.post(
-        `http://localhost:3000/api/payments/${paymentId}/${action}`,
+        `https://driving-backend-stmb.onrender.com/api/payments/${paymentId}/${action}`,
         {},
         getAuthHeader()
       );
