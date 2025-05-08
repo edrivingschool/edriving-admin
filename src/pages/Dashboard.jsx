@@ -116,13 +116,13 @@ const Dashboard = () => {
 
   const titles = [
     'Dashboard',
-    'Users',
-    'Register Teacher',
-    'Pending Enrollments',
-    'Register Admin',
-    'Manage Courses',
-    'Document Verification',
-    'Verify Payments'
+    'Dashboard',
+    'Dashboard',
+    'Dashboard',
+    'Dashboard',
+    'Dashboard',
+    'Dashboard',
+    'Dashboard'
   ];
 
   const navItems = [

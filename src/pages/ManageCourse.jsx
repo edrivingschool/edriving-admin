@@ -28,6 +28,7 @@ import {
 } from '@mui/material';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
+import QuizManagement from './QuizManagment';
 
 const LessonManagement = ({ courseId, onBack }) => {
   const [lessons, setLessons] = useState([]);
@@ -46,7 +47,14 @@ const LessonManagement = ({ courseId, onBack }) => {
     document_url: '',
     position: 0
   });
+  const [selectedLesson, setSelectedLesson] = useState(null);
+  
 
+const handleQuizNavigate = (lessonId) => {
+  const selected = lessons.find(l => l.id === lessonId);
+  setSelectedLesson(selected);
+};
+  
   const fetchLessons = async () => {
     try {
       const res = await axios.get(`https://driving-backend-stmb.onrender.com/api/lessons/course/${courseId}`);
@@ -128,6 +136,15 @@ const LessonManagement = ({ courseId, onBack }) => {
   if (loading) {
     return <CircularProgress sx={{ display: 'block', margin: '2rem auto' }} />;
   }
+  
+if (selectedLesson) {
+  return (
+    <QuizManagement 
+      lessonId={selectedLesson.id} 
+      onBack={() => setSelectedLesson(null)}
+    />
+  );
+}
 
   return (
     <Box>
@@ -152,6 +169,7 @@ const LessonManagement = ({ courseId, onBack }) => {
             <ListItem
               secondaryAction={
                 <Box>
+
                   <IconButton edge="end" onClick={() => handleEditClick(lesson)} sx={{ mr: 1 }}>
                     <Edit />
                   </IconButton>
@@ -160,6 +178,9 @@ const LessonManagement = ({ courseId, onBack }) => {
                   </IconButton>
                 </Box>
               }
+              
+              onClick={() => handleQuizNavigate(lesson.id)}
+              sx={{ cursor: 'pointer', '&:hover': { backgroundColor: '#000' } }}
             >
               <ListItemText
                 primary={
@@ -357,7 +378,12 @@ const ManageCourses = () => {
   const [courseToDelete, setCourseToDelete] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
+  const [selectedLesson, setSelectedLesson] = useState(null);
 
+
+
+
+  
   const fetchCourses = async () => {
     try {
       const res = await axios.get('https://driving-backend-stmb.onrender.com/api/admin/course/all');
