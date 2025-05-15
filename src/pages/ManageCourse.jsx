@@ -1,4 +1,3 @@
-// src/pages/dashboard/ManageCourses.js
 import { Add, ArrowBack, Delete, Edit } from '@mui/icons-material';
 import {
   Alert,
@@ -44,17 +43,19 @@ const LessonManagement = ({ courseId, onBack }) => {
     content: '',
     media_url: '',
     media_type: '',
-    document_url: '',
     position: 0
   });
+  const [selectedFile, setSelectedFile] = useState(null);
   const [selectedLesson, setSelectedLesson] = useState(null);
-  
+    const [isAdding, setIsAdding] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-const handleQuizNavigate = (lessonId) => {
-  const selected = lessons.find(l => l.id === lessonId);
-  setSelectedLesson(selected);
-};
-  
+  const handleQuizNavigate = (lessonId) => {
+    const selected = lessons.find(l => l.id === lessonId);
+    setSelectedLesson(selected);
+  };
+
   const fetchLessons = async () => {
     try {
       const res = await axios.get(`https://driving-backend-stmb.onrender.com/api/lessons/course/${courseId}`);
@@ -77,12 +78,14 @@ const handleQuizNavigate = (lessonId) => {
 
   const handleDeleteConfirm = async () => {
     try {
+      setIsDeleting(true);
       await axios.delete(`https://driving-backend-stmb.onrender.com/api/lessons/${lessonToDelete}`);
       setSuccess('Lesson deleted successfully');
       fetchLessons();
     } catch (err) {
       setError('Failed to delete lesson');
     } finally {
+      setIsDeleting(false);
       setDeleteDialogOpen(false);
       setLessonToDelete(null);
     }
@@ -94,15 +97,15 @@ const handleQuizNavigate = (lessonId) => {
       content: '',
       media_url: '',
       media_type: '',
-      document_url: '',
       position: lessons.length + 1,
-      course_id: courseId
     });
+    setSelectedFile(null);
     setAddDialogOpen(true);
   };
 
   const handleEditClick = (lesson) => {
     setCurrentLesson(lesson);
+    setSelectedFile(null);
     setEditDialogOpen(true);
   };
 
@@ -111,25 +114,58 @@ const handleQuizNavigate = (lessonId) => {
     setCurrentLesson({ ...currentLesson, [name]: value });
   };
 
+  const handleFileChange = (e) => {
+    setSelectedFile(e.target.files[0]);
+  };
+
+  const createFormData = () => {
+    const formData = new FormData();
+    formData.append('title', currentLesson.title);
+    formData.append('content', currentLesson.content);
+    formData.append('media_url', currentLesson.media_url);
+    formData.append('media_type', currentLesson.media_type);
+    formData.append('position', currentLesson.position);
+    formData.append('course_id', courseId);
+    
+    if (selectedFile) {
+      formData.append('document', selectedFile);
+    }
+    
+    return formData;
+  };
+
+
   const handleAddSubmit = async () => {
     try {
-      await axios.post('https://driving-backend-stmb.onrender.com/api/lessons/', currentLesson);
+      setIsAdding(true);
+      const formData = createFormData();
+      await axios.post('https://driving-backend-stmb.onrender.com/api/lessons/', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
       setSuccess('Lesson added successfully');
       setAddDialogOpen(false);
       fetchLessons();
     } catch (err) {
-      setError('Failed to add lesson');
+      setError(err.response?.data?.error || 'Failed to add lesson');
+    } finally {
+      setIsAdding(false);
     }
   };
 
-  const handleEditSubmit = async () => {
+ const handleEditSubmit = async () => {
     try {
-      await axios.put(`https://driving-backend-stmb.onrender.com/api/lessons/${currentLesson.id}`, currentLesson);
+      setIsEditing(true);
+      const formData = createFormData();
+      await axios.put(`https://driving-backend-stmb.onrender.com/api/lessons/${currentLesson.id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
       setSuccess('Lesson updated successfully');
       setEditDialogOpen(false);
       fetchLessons();
     } catch (err) {
-      setError('Failed to update lesson');
+      setError(err.response?.data?.error || 'Failed to update lesson');
+    } finally {
+      setIsEditing(false);
     }
   };
 
@@ -137,14 +173,36 @@ const handleQuizNavigate = (lessonId) => {
     return <CircularProgress sx={{ display: 'block', margin: '2rem auto' }} />;
   }
   
-if (selectedLesson) {
-  return (
-    <QuizManagement 
-      lessonId={selectedLesson.id} 
-      onBack={() => setSelectedLesson(null)}
-    />
+  if (selectedLesson) {
+    return (
+      <QuizManagement 
+        lessonId={selectedLesson.id} 
+        onBack={() => setSelectedLesson(null)}
+      />
+    );
+  }
+
+  const renderFileUpload = (isEdit = false) => (
+    <>
+      <input
+        accept="application/pdf"
+        style={{ display: 'none' }}
+        id={isEdit ? 'edit-pdf-upload' : 'add-pdf-upload'}
+        type="file"
+        onChange={handleFileChange}
+      />
+      <label htmlFor={isEdit ? 'edit-pdf-upload' : 'add-pdf-upload'}>
+        <Button
+          variant="outlined"
+          component="span"
+          fullWidth
+          sx={{ mb: 2 }}
+        >
+          {selectedFile ? selectedFile.name : `Upload ${isEdit ? 'Updated ' : ''}PDF Document`}
+        </Button>
+      </label>
+    </>
   );
-}
 
   return (
     <Box>
@@ -167,20 +225,36 @@ if (selectedLesson) {
         {lessons.map((lesson) => (
           <React.Fragment key={lesson.id}>
             <ListItem
-              secondaryAction={
-                <Box>
+            secondaryAction={
+      <Box>
+        <IconButton 
+          edge="end" 
+          onClick={(e) => {
+            e.stopPropagation();
+            handleEditClick(lesson);
+          }} 
+          sx={{ mr: 1 }}
+        >
+          <Edit />
+        </IconButton>
+        <IconButton 
+          edge="end" 
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDeleteClick(lesson.id);
+          }}
+        >
+          <Delete />
+        </IconButton>
+      </Box>
+    }
 
-                  <IconButton edge="end" onClick={() => handleEditClick(lesson)} sx={{ mr: 1 }}>
-                    <Edit />
-                  </IconButton>
-                  <IconButton edge="end" onClick={() => handleDeleteClick(lesson.id)}>
-                    <Delete />
-                  </IconButton>
-                </Box>
-              }
-              
               onClick={() => handleQuizNavigate(lesson.id)}
-              sx={{ cursor: 'pointer', '&:hover': { backgroundColor: '#000' } }}
+              sx={{ 
+      cursor: 'pointer', 
+      '&:hover': { 
+        backgroundColor: 'action.hover' // Theme-aware hover color
+      }  }}
             >
               <ListItemText
                 primary={
@@ -239,15 +313,7 @@ if (selectedLesson) {
             fullWidth
             sx={{ mb: 2 }}
           />
-          <TextField
-            margin="dense"
-            label="Document URL"
-            name="document_url"
-            value={currentLesson.document_url}
-            onChange={handleLessonChange}
-            fullWidth
-            sx={{ mb: 2 }}
-          />
+          {renderFileUpload()}
           <TextField
             margin="dense"
             label="Position"
@@ -260,7 +326,9 @@ if (selectedLesson) {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setAddDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleAddSubmit} variant="contained">Add</Button>
+           <Button onClick={handleAddSubmit} variant="contained" disabled={isAdding}>
+      {isAdding ? <CircularProgress size={24} /> : 'Add'}
+    </Button>
         </DialogActions>
       </Dialog>
 
@@ -306,15 +374,7 @@ if (selectedLesson) {
             fullWidth
             sx={{ mb: 2 }}
           />
-          <TextField
-            margin="dense"
-            label="Document URL"
-            name="document_url"
-            value={currentLesson.document_url}
-            onChange={handleLessonChange}
-            fullWidth
-            sx={{ mb: 2 }}
-          />
+          {renderFileUpload(true)}
           <TextField
             margin="dense"
             label="Position"
@@ -327,7 +387,9 @@ if (selectedLesson) {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleEditSubmit} variant="contained">Save</Button>
+           <Button onClick={handleEditSubmit} variant="contained" disabled={isEditing}>
+      {isEditing ? <CircularProgress size={24} /> : 'Save'}
+    </Button>
         </DialogActions>
       </Dialog>
 
@@ -346,9 +408,9 @@ if (selectedLesson) {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleDeleteConfirm} color="error" autoFocus>
-            Delete
-          </Button>
+            <Button onClick={handleDeleteConfirm} color="error" disabled={isDeleting}>
+      {isDeleting ? <CircularProgress size={24} /> : 'Delete'}
+    </Button>
         </DialogActions>
       </Dialog>
 
@@ -366,6 +428,8 @@ if (selectedLesson) {
     </Box>
   );
 };
+
+
 
 const ManageCourses = () => {
   const theme = useTheme();

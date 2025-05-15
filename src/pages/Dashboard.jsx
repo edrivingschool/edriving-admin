@@ -44,6 +44,7 @@ import {
 
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import DocumentVerificationPage from './DocumentVerficationPage';
 import ManageCourses from './ManageCourse';
 import PendingEnrollmentsPage from './PendingEnrollmentsPage';
@@ -51,7 +52,6 @@ import Signup from './Signup';
 import TeacherSignupPage from './TeacherSignupPage';
 import UsersPage from './UsersPage';
 import VerifyPaymentsPage from './VerifyPaymentsPage';
-
 // Themes
 const lightTheme = createTheme({ palette: { mode: 'light' } });
 const darkTheme = createTheme({ palette: { mode: 'dark' } });
@@ -102,6 +102,12 @@ const Dashboard = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [themeMode, setThemeMode] = useState('dark');
   const theme = themeMode === 'light' ? lightTheme : darkTheme;
+  const navigate = useNavigate(); 
+  
+const handleLogout = () => {
+  localStorage.removeItem('authToken'); 
+  navigate('/'); 
+};
 
   const screens = [
     <DashboardHome key="home" setSelectedIndex={setSelectedIndex} />,
@@ -139,6 +145,7 @@ const Dashboard = () => {
   const handleProfileMenuOpen = (e) => setAnchorEl(e.currentTarget);
   const handleProfileMenuClose = () => setAnchorEl(null);
   const toggleTheme = () => setThemeMode(prev => (prev === 'light' ? 'dark' : 'light'));
+  
 
   return (
     <ThemeProvider theme={theme}>
@@ -172,7 +179,7 @@ const Dashboard = () => {
               </ListItemIcon>
               <ListItemText primary={themeMode === 'light' ? 'Dark Mode' : 'Light Mode'} />
             </NavItem>
-            <NavItem onClick={() => {/* logout logic */ }}>
+            <NavItem onClick={() => { handleLogout() }}>
               <ListItemIcon><ExitToAppIcon /></ListItemIcon>
               <ListItemText primary="Logout" />
             </NavItem>
@@ -197,7 +204,7 @@ const Dashboard = () => {
                 </IconButton>
                 <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleProfileMenuClose}>
                   <MenuItem onClick={handleProfileMenuClose}>Settings</MenuItem>
-                  <MenuItem onClick={() => {/* logout */ }}>Logout</MenuItem>
+                  <MenuItem onClick={handleLogout}>Logout</MenuItem>
                 </Menu>
               </Box>
             </Toolbar>
@@ -231,7 +238,7 @@ const DashboardHome = ({ setSelectedIndex }) => {
     const fetchDashboardStats = async () => {
       try {
         const token = localStorage.getItem('authToken');
-        const response = await axios.get('http://localhost:3000/api/stats/dashboard', {
+        const response = await axios.get('https://driving-backend-stmb.onrender.com/api/stats/dashboard', {
           headers: {
             Authorization: `Bearer ${token}`
           }
