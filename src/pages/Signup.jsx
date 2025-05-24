@@ -37,33 +37,33 @@ const Signup = () => {
   const navigate = useNavigate();
   const { updateAuthInfo } = useContext(AuthContext);
 
-  const validateField = (name, value) => {
-    switch (name) {
-      case 'firstName':
-        if (!value.trim()) return 'First name is required';
-        if (!/^[A-Za-z]{2,}$/.test(value.trim())) 
-          return 'Must contain only letters (min 2 characters)';
-        return '';
-      case 'lastName':
-        if (!value.trim()) return 'Last name is required';
-        if (!/^[A-Za-z]{2,}$/.test(value.trim())) 
-          return 'Must contain only letters (min 2 characters)';
-        return '';
-      case 'email':
-        if (!value.trim()) return 'Email is required';
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())) 
-          return 'Please enter a valid email address';
-        return '';
-      case 'password':
-        if (!value) return 'Password is required';
-        if (value.length < 8) return 'Must be at least 8 characters';
-        if (!/(?=.*[a-zA-Z])/.test(value)) return 'Must contain at least one letter';
-        if (!/(?=.*\d)/.test(value)) return 'Must contain at least one number';
-        return '';
-      default:
-        return '';
-    }
-  };
+ const validateField = (name, value) => {
+  switch (name) {
+    case 'firstName':
+      if (!value.trim()) return 'First name is required';
+      if (!/^[A-Za-z]{2,}$/.test(value.trim())) 
+        return 'Must contain only letters (min 2 characters)';
+      return '';
+    case 'lastName':
+      if (!value.trim()) return 'Last name is required';
+      if (!/^[A-Za-z]{2,}$/.test(value.trim())) 
+        return 'Must contain only letters (min 2 characters)';
+      return '';
+    case 'email':
+      if (!value.trim()) return 'Email is required';
+      if (!/^[a-z][a-z0-9._%+-]*@[a-z0-9.-]+\.[a-z]{2,}$/.test(value.trim()))
+        return 'Email must start with a lowercase letter and contain no uppercase letters';
+      return '';
+    case 'password':
+      if (!value) return 'Password is required';
+      if (value.length < 8) return 'Must be at least 8 characters';
+      if (!/(?=.*[a-zA-Z])/.test(value)) return 'Must contain at least one letter';
+      if (!/(?=.*\d)/.test(value)) return 'Must contain at least one number';
+      return '';
+    default:
+      return '';
+  }
+};
 
   const handleBlur = (e) => {
     const { name } = e.target;
