@@ -4,7 +4,6 @@ import {
   Box,
   Button,
   CircularProgress,
-  Grid,
   IconButton,
   InputAdornment,
   Paper,
@@ -188,99 +187,91 @@ const Signup = () => {
           </Alert>
         )}
 
-        <Box component="form" onSubmit={handleSubmit} noValidate>
-          <Grid container spacing={3}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="First Name"
-                name="firstName"
-                value={form.firstName}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                error={touched.firstName && !!errors.firstName}
-                helperText={touched.firstName && errors.firstName}
-                required
-                autoComplete="given-name"
-                autoFocus
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Last Name"
-                name="lastName"
-                value={form.lastName}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                error={touched.lastName && !!errors.lastName}
-                helperText={touched.lastName && errors.lastName}
-                required
-                autoComplete="family-name"
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Email"
-                name="email"
-                type="email"
-                value={form.email}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                error={touched.email && !!errors.email}
-                helperText={touched.email && errors.email}
-                required
-                autoComplete="email"
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Password"
-                type={showPassword ? 'text' : 'password'}
-                name="password"
-                value={form.password}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                error={touched.password && !!errors.password}
-                helperText={touched.password && errors.password}
-                required
-                autoComplete="new-password"
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        onClick={() => setShowPassword(!showPassword)}
-                        edge="end"
-                      >
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  )
-                }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                size="large"
-                disabled={isLoading}
-                sx={{ py: 1.5 }}
-              >
-                {isLoading ? (
-                  <>
-                    <CircularProgress size={24} sx={{ mr: 1 }} />
-                    Creating Account...
-                  </>
-                ) : (
-                  'Register'
-                )}
-              </Button>
-            </Grid>
-          </Grid>
+        <Box component="form" onSubmit={handleSubmit} noValidate sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <TextField
+            fullWidth
+            label="First Name"
+            name="firstName"
+            value={form.firstName}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            error={touched.firstName && !!errors.firstName}
+            helperText={touched.firstName && errors.firstName}
+            required
+            autoComplete="given-name"
+            autoFocus
+          />
+          
+          <TextField
+            fullWidth
+            label="Last Name"
+            name="lastName"
+            value={form.lastName}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            error={touched.lastName && !!errors.lastName}
+            helperText={touched.lastName && errors.lastName}
+            required
+            autoComplete="family-name"
+          />
+          
+          <TextField
+            fullWidth
+            label="Email"
+            name="email"
+            type="email"
+            value={form.email}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            error={touched.email && !!errors.email}
+            helperText={touched.email && errors.email}
+            required
+            autoComplete="email"
+          />
+          
+          <TextField
+            fullWidth
+            label="Password"
+            type={showPassword ? 'text' : 'password'}
+            name="password"
+            value={form.password}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            error={touched.password && !!errors.password}
+            helperText={touched.password && errors.password}
+            required
+            autoComplete="new-password"
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={() => setShowPassword(!showPassword)}
+                    edge="end"
+                  >
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              )
+            }}
+          />
+          
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            size="large"
+            disabled={isLoading}
+            sx={{ py: 1.5, mt: 2 }}
+          >
+            {isLoading ? (
+              <>
+                <CircularProgress size={24} sx={{ mr: 1 }} />
+                Creating Account...
+              </>
+            ) : (
+              'Register'
+            )}
+          </Button>
         </Box>
       </Paper>
     </Box>
