@@ -27,20 +27,110 @@ export default function TeacherSignupPage() {
     phoneNumber: '',
     password: ''
   });
+  
+  const [errors, setErrors] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phoneNumber: '',
+    password: ''
+  });
+  
+  const [touched, setTouched] = useState({
+    firstName: false,
+    lastName: false,
+    email: false,
+    phoneNumber: false,
+    password: false
+  });
+  
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
 
+  const validateField = (name, value) => {
+    let error = '';
+    
+    switch (name) {
+      case 'firstName':
+      case 'lastName':
+        if (!value.trim()) error = 'This field is required';
+        else if (value.length < 2) error = 'Must be at least 2 characters';
+        else if (!/^[a-zA-Z]+$/.test(value)) error = 'Only letters allowed';
+        break;
+      case 'email':
+        if (!value) error = 'Email is required';
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) error = 'Invalid email format';
+        break;
+      case 'phoneNumber':
+        if (!value) error = 'Phone number is required';
+        else if (!/^[0-9]{10,15}$/.test(value)) error = 'Invalid phone number (10-15 digits)';
+        break;
+      case 'password':
+        if (!value) error = 'Password is required';
+        else if (value.length < 8) error = 'Password must be at least 8 characters';
+        else if (!/(?=.*[A-Z])/.test(value)) error = 'Must contain at least one uppercase letter';
+        else if (!/(?=.*[0-9])/.test(value)) error = 'Must contain at least one number';
+        break;
+      default:
+        break;
+    }
+    
+    return error;
+  };
+
+  const handleBlur = (e) => {
+    const { name } = e.target;
+    setTouched(prev => ({ ...prev, [name]: true }));
+    
+    // Validate the field when it loses focus
+    const error = validateField(name, formData[name]);
+    setErrors(prev => ({ ...prev, [name]: error }));
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    
+    // Validate the field as user types (only if it's been touched)
+    if (touched[name]) {
+      const error = validateField(name, value);
+      setErrors(prev => ({ ...prev, [name]: error }));
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    let isValid = true;
+    
+    Object.keys(formData).forEach(key => {
+      const error = validateField(key, formData[key]);
+      newErrors[key] = error;
+      if (error) isValid = false;
+    });
+    
+    setErrors(newErrors);
+    setTouched({
+      firstName: true,
+      lastName: true,
+      email: true,
+      phoneNumber: true,
+      password: true
+    });
+    
+    return isValid;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+    
+    if (!validateForm()) {
+      return;
+    }
+    
     setLoading(true);
     try {
       const res = await axios.post(
@@ -55,6 +145,14 @@ export default function TeacherSignupPage() {
         email: '',
         phoneNumber: '',
         password: ''
+      });
+      // Reset touched state after successful submission
+      setTouched({
+        firstName: false,
+        lastName: false,
+        email: false,
+        phoneNumber: false,
+        password: false
       });
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed.');
@@ -91,7 +189,7 @@ export default function TeacherSignupPage() {
               { name: 'firstName', label: 'First Name' },
               { name: 'lastName', label: 'Last Name' },
               { name: 'email', label: 'Email', type: 'email' },
-              { name: 'phoneNumber', label: 'Phone Number' },
+              { name: 'phoneNumber', label: 'Phone Number', type: 'tel' },
               { name: 'password', label: 'Password', type: showPassword ? 'text' : 'password' }
             ].map((field, idx) => (
               <TextField
@@ -105,6 +203,9 @@ export default function TeacherSignupPage() {
                 type={field.type || 'text'}
                 value={formData[field.name]}
                 onChange={handleChange}
+                onBlur={handleBlur}
+                error={touched[field.name] && Boolean(errors[field.name])}
+                helperText={touched[field.name] && errors[field.name]}
                 InputProps={
                   field.name === 'password'
                     ? {
