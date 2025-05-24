@@ -1,33 +1,42 @@
-import React, { useState } from 'react';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 import {
-  TextField,
+  Alert,
+  Box,
   Button,
   Card,
   CardContent,
-  Typography,
-  IconButton,
-  InputAdornment,
-  Alert,
+  CircularProgress,
   Dialog,
-  DialogTitle,
+  DialogActions,
   DialogContent,
   DialogContentText,
-  DialogActions,
-  CircularProgress,
-  Box
+  DialogTitle,
+  IconButton,
+  InputAdornment,
+  TextField,
+  Typography
 } from '@mui/material';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
 import axios from 'axios';
+import { useState } from 'react';
 
 export default function TeacherSignupPage() {
-  const [formData, setFormData] = useState({ firstName: '', lastName: '', email: '', phoneNumber: '', password: '' });
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phoneNumber: '',
+    password: ''
+  });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
 
-  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -40,7 +49,13 @@ export default function TeacherSignupPage() {
       );
       setResult(res.data);
       setSuccessOpen(true);
-      setFormData({ firstName: '', lastName: '', email: '', phoneNumber: '', password: '' });
+      setFormData({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phoneNumber: '',
+        password: ''
+      });
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed.');
     } finally {
@@ -53,41 +68,56 @@ export default function TeacherSignupPage() {
       sx={{
         display: 'flex',
         justifyContent: 'center',
-        alignItems: 'right',
-        bgcolor: 'background.paper',
-        p: 5,
-        minHeight: '100vh'
-        
+        alignItems: 'center',
+        bgcolor: 'background.default',
+        minHeight: '100vh',
+        p: 2
       }}
     >
-      <Card sx={{ width: { xs: '100%', sm: 480 }, borderRadius: 2, boxShadow: 4 }}>
-        <CardContent sx={{ px: 4, py: 5 }}>
-          <Typography variant="h5" align="center" gutterBottom sx={{ fontWeight: 700, mb: 3 }}>
+      <Card sx={{ width: '100%', maxWidth: 480, borderRadius: 3, boxShadow: 6 }}>
+        <CardContent sx={{ p: 4 }}>
+          <Typography variant="h5" align="center" fontWeight={700} gutterBottom>
             Teacher Registration
           </Typography>
-          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
 
           <Box component="form" onSubmit={handleSubmit} noValidate>
-            {['firstName','lastName','email','phoneNumber','password'].map((field, idx) => (
+            {[
+              { name: 'firstName', label: 'First Name' },
+              { name: 'lastName', label: 'Last Name' },
+              { name: 'email', label: 'Email', type: 'email' },
+              { name: 'phoneNumber', label: 'Phone Number' },
+              { name: 'password', label: 'Password', type: showPassword ? 'text' : 'password' }
+            ].map((field, idx) => (
               <TextField
                 key={idx}
                 fullWidth
-                type={field === 'password' && !showPassword ? 'password' : 'text'}
-                label={field.replace(/([A-Z])/g, ' $1').trim()}
-                name={field}
-                value={formData[field]}
-                onChange={handleChange}
-                sx={{ mb: 2 }}
                 required
-                InputProps={field === 'password' && {
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
-                      </IconButton>
-                    </InputAdornment>
-                  )
-                }}
+                margin="normal"
+                variant="outlined"
+                label={field.label}
+                name={field.name}
+                type={field.type || 'text'}
+                value={formData[field.name]}
+                onChange={handleChange}
+                InputProps={
+                  field.name === 'password'
+                    ? {
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton onClick={() => setShowPassword((prev) => !prev)} edge="end">
+                              {showPassword ? <VisibilityOff /> : <Visibility />}
+                            </IconButton>
+                          </InputAdornment>
+                        )
+                      }
+                    : undefined
+                }
               />
             ))}
 
@@ -96,7 +126,7 @@ export default function TeacherSignupPage() {
               fullWidth
               size="large"
               variant="contained"
-              sx={{ py: 1.5, mt: 1.5 }}
+              sx={{ mt: 2, py: 1.5 }}
               disabled={loading}
             >
               {loading ? <CircularProgress size={24} color="inherit" /> : 'Register'}
@@ -105,18 +135,21 @@ export default function TeacherSignupPage() {
         </CardContent>
       </Card>
 
+      {/* Success Dialog */}
       <Dialog open={successOpen} onClose={() => setSuccessOpen(false)}>
         <DialogTitle>Success!</DialogTitle>
         <DialogContent>
           <DialogContentText>
             Teacher has been registered successfully.
           </DialogContentText>
-          <Box sx={{ mt: 2, display: 'grid', gridTemplateColumns: 'auto 1fr', gap: 1 }}>
-            <Typography fontWeight={600}>ID:</Typography><Typography>{result?.id}</Typography>
-            <Typography fontWeight={600}>Name:</Typography><Typography>{result?.firstName} {result?.lastName}</Typography>
-            <Typography fontWeight={600}>Email:</Typography><Typography>{result?.email}</Typography>
-            <Typography fontWeight={600}>Phone:</Typography><Typography>{result?.phoneNumber}</Typography>
-          </Box>
+          {result && (
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="body2"><strong>ID:</strong> {result.id}</Typography>
+              <Typography variant="body2"><strong>Name:</strong> {result.firstName} {result.lastName}</Typography>
+              <Typography variant="body2"><strong>Email:</strong> {result.email}</Typography>
+              <Typography variant="body2"><strong>Phone:</strong> {result.phoneNumber}</Typography>
+            </Box>
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setSuccessOpen(false)}>Close</Button>

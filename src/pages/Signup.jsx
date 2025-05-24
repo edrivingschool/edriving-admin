@@ -30,17 +30,35 @@ const Signup = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    if (!form.firstName.trim()) newErrors.firstName = 'First name is required';
-    if (!form.lastName.trim()) newErrors.lastName = 'Last name is required';
+
+    // First name validation
+    if (!form.firstName.trim()) {
+      newErrors.firstName = 'First name is required';
+    } else if (!/^[A-Za-z]{2,}$/.test(form.firstName.trim())) {
+      newErrors.firstName = 'First name must contain only letters and be at least 2 characters';
+    }
+
+    // Last name validation
+    if (!form.lastName.trim()) {
+      newErrors.lastName = 'Last name is required';
+    } else if (!/^[A-Za-z]{2,}$/.test(form.lastName.trim())) {
+      newErrors.lastName = 'Last name must contain only letters and be at least 2 characters';
+    }
+
+    // Email validation
     if (!form.email.trim()) {
       newErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-      newErrors.email = 'Please enter a valid email';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+      newErrors.email = 'Please enter a valid email address';
     }
+
+    // Password validation
     if (!form.password) {
       newErrors.password = 'Password is required';
-    } else if (form.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+    } else if (form.password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters';
+    } else if (!/(?=.*[a-zA-Z])(?=.*\d)/.test(form.password)) {
+      newErrors.password = 'Password must contain at least one letter and one number';
     }
 
     setErrors(newErrors);
@@ -68,9 +86,9 @@ const Signup = () => {
           headers: { 'Content-Type': 'application/json' },
         }
       );
-    
+
       console.log('Signup successful:', signupRes.data);
-    
+
       // Clear form fields
       setForm({
         firstName: '',
@@ -78,23 +96,22 @@ const Signup = () => {
         email: '',
         password: '',
       });
-    
+
       // Show success message
       setSuccessMessage('Admin registered successfully!');
-    
+
       // Optional: Auto-hide success message
       setTimeout(() => {
         setSuccessMessage('');
       }, 3000);
-      
+
     } catch (err) {
       console.error('Signup Error:', err?.response?.data || err.message);
       const message = err?.response?.data?.message || 'Signup failed. Please try again.';
       alert(message);
-    }
-    finally {
+    } finally {
       setIsLoading(false);
-    }    
+    }
   };
 
   return (
@@ -135,6 +152,8 @@ const Signup = () => {
                 onChange={handleChange}
                 error={!!errors.firstName}
                 helperText={errors.firstName}
+                required
+                autoComplete="given-name"
               />
             </Grid>
             <Grid item>
@@ -146,6 +165,8 @@ const Signup = () => {
                 onChange={handleChange}
                 error={!!errors.lastName}
                 helperText={errors.lastName}
+                required
+                autoComplete="family-name"
               />
             </Grid>
             <Grid item>
@@ -157,6 +178,8 @@ const Signup = () => {
                 onChange={handleChange}
                 error={!!errors.email}
                 helperText={errors.email}
+                required
+                autoComplete="email"
               />
             </Grid>
             <Grid item>
@@ -169,6 +192,8 @@ const Signup = () => {
                 onChange={handleChange}
                 error={!!errors.password}
                 helperText={errors.password}
+                required
+                autoComplete="new-password"
               />
             </Grid>
             <Grid item>
