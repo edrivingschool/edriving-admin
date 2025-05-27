@@ -1,5 +1,7 @@
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
-import ProtectedRoute from './context/ProtectedRoutes'; // Import your ProtectedRoute
+import ProtectedRoute from './context/ProtectedRoutes';
 import Dashboard from './pages/Dashboard';
 import ForgotPassword from './pages/ForgetPassword';
 import Login from './pages/Login';
@@ -9,25 +11,27 @@ import TeacherSignupPage from './pages/TeacherSignupPage';
 import VerifyOTP from './pages/VerifyOtp';
 
 const App = () => (
-  <Router>
-    <Routes>
-      <Route path="/" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
-      <Route path="/login" element={<Login />} />
-      <Route 
-        path="/dashboard" 
-        element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        } 
-      />
-      <Route path="/teacher-signup" element={<TeacherSignupPage />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/verify-otp" element={<VerifyOTP />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
-    </Routes>
-  </Router>
+  <LocalizationProvider dateAdapter={AdapterDateFns}>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/login" element={<Login />} />
+        <Route 
+          path="/dashboard" 
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route path="/teacher-signup" element={<TeacherSignupPage />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/verify-otp" element={<VerifyOTP />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+      </Routes>
+    </Router>
+  </LocalizationProvider>
 );
 
 export default App;
