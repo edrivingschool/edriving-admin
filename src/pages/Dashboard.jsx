@@ -11,7 +11,8 @@ import {
   People as PeopleIcon,
   PersonAdd as PersonAddIcon,
   Person as PersonIcon,
-  School as SchoolIcon
+  Assessment as ReportIcon,
+  School as SchoolIcon,
 } from '@mui/icons-material';
 
 import {
@@ -43,11 +44,12 @@ import {
 } from '@mui/material';
 
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DocumentVerificationPage from './DocumentVerficationPage';
 import ManageCourses from './ManageCourse';
 import PendingEnrollmentsPage from './PendingEnrollmentsPage';
+import ReportsPage from './ReportsPage';
 import Signup from './Signup';
 import TeacherSignupPage from './TeacherSignupPage';
 import UsersPage from './UsersPage';
@@ -109,38 +111,41 @@ const handleLogout = () => {
   navigate('/'); 
 };
 
-  const screens = [
-    <DashboardHome key="home" setSelectedIndex={setSelectedIndex} />,
-    <UsersPage key="users" />,
-    <TeacherSignupPage key="teacher" />,
-    <PendingEnrollmentsPage key="pending-enrollments" />,
-    <Signup key="admin-signup" />,
-    <ManageCourses key="manage-courses" />,
-    <DocumentVerificationPage key="document-verification" />,
-    <VerifyPaymentsPage key="verify-payments" />
-  ];
+ const screens = [
+  <DashboardHome key="home" setSelectedIndex={setSelectedIndex} />,
+  <UsersPage key="users" />,
+  <TeacherSignupPage key="teacher" />,
+  <PendingEnrollmentsPage key="pending-enrollments" />,
+  <Signup key="admin-signup" />,
+  <ManageCourses key="manage-courses" />,
+  <DocumentVerificationPage key="document-verification" />,
+  <VerifyPaymentsPage key="verify-payments" />,
+  <ReportsPage key="reports" /> // Add reports page
+];
 
   const titles = [
-    'Dashboard',
-    'Dashboard',
-    'Dashboard',
-    'Dashboard',
-    'Dashboard',
-    'Dashboard',
-    'Dashboard',
-    'Dashboard'
-  ];
+  'Dashboard',
+  'Users Management',
+  'Teacher Registration',
+  'Pending Enrollments',
+  'Admin Registration',
+  'Course Management',
+  'Document Verification',
+  'Payment Verification',
+  'Report Generation' // Add report title
+];
 
   const navItems = [
-    { icon: <DashboardIcon />, label: 'Dashboard' },
-    { icon: <PeopleIcon />, label: 'Users' },
-    { icon: <PersonIcon />, label: 'Register Teacher' },
-    { icon: <PersonAddIcon />, label: 'Pending Enrollments' },
-    { icon: <PersonIcon />, label: 'Register Admin' },
-    { icon: <SchoolIcon />, label: 'Manage Courses' },
-    { icon: <CheckCircleIcon />, label: 'Document Verification' },
-    { icon: <CheckCircleIcon />, label: 'Verify Payments' }
-  ];
+  { icon: <DashboardIcon />, label: 'Dashboard' },
+  { icon: <PeopleIcon />, label: 'Users' },
+  { icon: <PersonIcon />, label: 'Register Teacher' },
+  { icon: <PersonAddIcon />, label: 'Pending Enrollments' },
+  { icon: <PersonIcon />, label: 'Register Admin' },
+  { icon: <SchoolIcon />, label: 'Manage Courses' },
+  { icon: <CheckCircleIcon />, label: 'Document Verification' },
+  { icon: <CheckCircleIcon />, label: 'Verify Payments' },
+  { icon: <ReportIcon />, label: 'Reports' } // New reports section
+];
 
   const handleProfileMenuOpen = (e) => setAnchorEl(e.currentTarget);
   const handleProfileMenuClose = () => setAnchorEl(null);

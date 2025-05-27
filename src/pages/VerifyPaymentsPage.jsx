@@ -103,7 +103,7 @@ const PaymentVerificationPage = () => {
                         Enrollment: {payment.enrollment_id}
                       </Typography>
                       <Typography variant="body2" color="textSecondary">
-                        Amount: ₹{payment.amount}
+                        Amount: {payment.amount} Birr
                       </Typography>
                     </Grid>
 

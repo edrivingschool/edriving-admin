@@ -681,7 +681,7 @@ const ManageCourses = () => {
                   {course.description}
                 </Typography>
                 <Typography variant="subtitle1" color="primary" sx={{ fontWeight: 'bold' }}>
-                  ₹{course.price}
+                  {course.price}Birr
                 </Typography>
               </CardContent>
               <CardActions sx={{ justifyContent: 'flex-end' }}>
