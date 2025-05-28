@@ -51,35 +51,43 @@ export default function TeacherSignupPage() {
   const [result, setResult] = useState(null);
 
   const validateField = (name, value) => {
-    let error = '';
-    
-    switch (name) {
-      case 'firstName':
-      case 'lastName':
-        if (!value.trim()) error = 'This field is required';
-        else if (value.length < 2) error = 'Must be at least 2 characters';
-        else if (!/^[a-zA-Z]+$/.test(value)) error = 'Only letters allowed';
-        break;
-      case 'email':
-        if (!value) error = 'Email is required';
-        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) error = 'Invalid email format';
-        break;
-      case 'phoneNumber':
-        if (!value) error = 'Phone number is required';
-        else if (!/^[0-9]{10,15}$/.test(value)) error = 'Invalid phone number (10-15 digits)';
-        break;
-      case 'password':
-        if (!value) error = 'Password is required';
-        else if (value.length < 8) error = 'Password must be at least 8 characters';
-        else if (!/(?=.*[A-Z])/.test(value)) error = 'Must contain at least one uppercase letter';
-        else if (!/(?=.*[0-9])/.test(value)) error = 'Must contain at least one number';
-        break;
-      default:
-        break;
-    }
-    
-    return error;
-  };
+  let error = '';
+
+  switch (name) {
+    case 'firstName':
+    case 'lastName':
+      if (!value.trim()) error = 'This field is required';
+      else if (value.length < 2) error = 'Must be at least 2 characters';
+      else if (!/^[a-zA-Z]+$/.test(value)) error = 'Only letters allowed';
+      break;
+
+    case 'email':
+      if (!value) error = 'Email is required';
+      else if (!/^[a-z][a-z0-9._%+-]*@[a-z0-9.-]+\.[a-z]{2,}$/.test(value)) {
+        error = 'Invalid email format: must start with lowercase letter and contain no uppercase letters';
+      }
+      break;
+
+    case 'phoneNumber':
+      if (!value) error = 'Phone number is required';
+      else if (!/^(09|07)\d{8}$/.test(value)) {
+        error = 'Phone number must start with 09 or 07 and be exactly 10 digits';
+      }
+      break;
+
+    case 'password':
+      if (!value) error = 'Password is required';
+      else if (value.length < 8) error = 'Password must be at least 8 characters';
+      else if (!/(?=.*[A-Z])/.test(value)) error = 'Must contain at least one uppercase letter';
+      else if (!/(?=.*[0-9])/.test(value)) error = 'Must contain at least one number';
+      break;
+
+    default:
+      break;
+  }
+
+  return error;
+};
 
   const handleBlur = (e) => {
     const { name } = e.target;
